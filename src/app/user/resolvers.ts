@@ -2,6 +2,8 @@ import axios from "axios"
 import { json } from "body-parser";
 import { prismaClient } from "../../clients/db";
 import JWTService from "../../services/jwt";
+import { GraphqlContext } from "../../interfaces";
+import { User } from "@prisma/client";
 
 interface GoogleTokenResult{
         iss?:string,
@@ -26,6 +28,7 @@ interface GoogleTokenResult{
 const quries  = {
 verifyGoogleToken: async (parent:any,{token}:{token:string})=>{
     const googleToken = token
+    console.log("veriftygoogletoken")
     const googleAuthUrl = new URL("https://oauth2.googleapis.com/tokeninfo");
     googleAuthUrl.searchParams.set("id_token",googleToken)
     const {data} = await axios.get<GoogleTokenResult>(googleAuthUrl.toString(),{
@@ -52,7 +55,23 @@ verifyGoogleToken: async (parent:any,{token}:{token:string})=>{
   
     return userToken;
 },
-    helloFromServer:()=>"hello from server aniket"
+    helloFromServer:()=>"hello from server aniket",
+    getCurrentUser:async (parent:any,args:any,ctx:GraphqlContext)=>{
+        console.log("getcurrent user")
+        const id = ctx.user?.id
+        if(!id)return null;
+        const user = await prismaClient.user.findUnique({where:{id}})
+        return user;
+    },
+    getUserFromId: async(parent:any,{id}:{id:string})=>{
+        return prismaClient.user.findUnique({where
+        :{id}})
+    }
 }
-export const resolvers = {quries}
+const extraResolver = {
+    User: {
+    tweets : (parent:User)=> prismaClient.tweet.findMany({where:{authorId:parent.id}})
+    }
+}
+export const resolvers = {quries,extraResolver}
 

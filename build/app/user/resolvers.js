@@ -19,6 +19,7 @@ const jwt_1 = __importDefault(require("../../services/jwt"));
 const quries = {
     verifyGoogleToken: (parent, { token }) => __awaiter(void 0, void 0, void 0, function* () {
         const googleToken = token;
+        console.log("veriftygoogletoken");
         const googleAuthUrl = new URL("https://oauth2.googleapis.com/tokeninfo");
         googleAuthUrl.searchParams.set("id_token", googleToken);
         const { data } = yield axios_1.default.get(googleAuthUrl.toString(), {
@@ -45,6 +46,23 @@ const quries = {
         const userToken = yield jwt_1.default.generateTokenForUser(userInDb);
         return userToken;
     }),
-    helloFromServer: () => "hello from server aniket"
+    helloFromServer: () => "hello from server aniket",
+    getCurrentUser: (parent, args, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a;
+        console.log("getcurrent user");
+        const id = (_a = ctx.user) === null || _a === void 0 ? void 0 : _a.id;
+        if (!id)
+            return null;
+        const user = yield db_1.prismaClient.user.findUnique({ where: { id } });
+        return user;
+    }),
+    getUserFromId: (parent, { id }) => __awaiter(void 0, void 0, void 0, function* () {
+        return db_1.prismaClient.user.findUnique({ where: { id } });
+    })
 };
-exports.resolvers = { quries };
+const extraResolver = {
+    User: {
+        tweets: (parent) => db_1.prismaClient.tweet.findMany({ where: { authorId: parent.id } })
+    }
+};
+exports.resolvers = { quries, extraResolver };

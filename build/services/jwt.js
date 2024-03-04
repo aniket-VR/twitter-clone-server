@@ -25,5 +25,9 @@ class JWTService {
             return token;
         });
     }
+    static decodeToken(token) {
+        console.log('decodetoken' + token);
+        return jsonwebtoken_1.default.verify(token, JWT_SECRET);
+    }
 }
 exports.default = JWTService;
