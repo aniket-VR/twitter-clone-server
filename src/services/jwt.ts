@@ -14,7 +14,7 @@ class JWTService{
         return token;
     }
     public static  decodeToken(token:string){
-        console.log('decodetoken'+token)
+        // console.log('decodetoken'+token)
         return jwt.verify(token,JWT_SECRET)  as JWTuser ;
     }
 }

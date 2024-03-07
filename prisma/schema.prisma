@@ -14,14 +14,26 @@ datasource db {
 }
 
 model User {
-  id              String   @id @default(cuid())
+  id              String    @id @default(cuid())
   firstName       String
   lastName        String?
-  email           String   @unique
+  email           String    @unique
   profileImageUrl String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   tweets          Tweet[]
+  followers       Follows[] @relation("follower")
+  following       Follows[] @relation("following")
+}
+
+model Follows {
+  follower   User   @relation("follower", references: [id], fields: [followerId])
+  followerId String
+
+  following   User   @relation("following", references: [id], fields: [followingId])
+  followingId String
+
+  @@id([followerId, followingId])
 }
 
 model Tweet {

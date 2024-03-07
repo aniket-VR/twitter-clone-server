@@ -1,77 +1,57 @@
-import axios from "axios"
-import { json } from "body-parser";
 import { prismaClient } from "../../clients/db";
-import JWTService from "../../services/jwt";
 import { GraphqlContext } from "../../interfaces";
 import { User } from "@prisma/client";
+import UserServices from "../../services/user";
 
-interface GoogleTokenResult{
-        iss?:string,
-        nbf?:string,
-        aud?:string,
-        sub?:string,
-        email:string,
-        email_verified:string,
-        azp?:string,
-        name?:string,
-        picture?:string,
-        given_name:string,
-        family_name?:string,
-        iat?:string,
-        exp?:string,
-        jti?:string,
-        alg?:string,
-        kid?:string,
-        typ?:string 
 
-}
 const quries  = {
-verifyGoogleToken: async (parent:any,{token}:{token:string})=>{
-    const googleToken = token
-    console.log("veriftygoogletoken")
-    const googleAuthUrl = new URL("https://oauth2.googleapis.com/tokeninfo");
-    googleAuthUrl.searchParams.set("id_token",googleToken)
-    const {data} = await axios.get<GoogleTokenResult>(googleAuthUrl.toString(),{
-        responseType:"json"
-    })
-    const user =await prismaClient.user.findUnique({
-        where: {email:data.email}
-    })
-    if(!user){
-        await prismaClient.user.create({
-            data :{
-                email:data.email,
-                firstName:data.given_name,
-                lastName:data.family_name,
-                profileImageUrl:data.picture,
-            }
-        })
-    }
-    const userInDb = await prismaClient.user.findUnique({where:{
-        email:data.email
-    }})
-    if(!userInDb) throw ("user not found with this email")
-    const userToken = await JWTService.generateTokenForUser(userInDb);
-  
-    return userToken;
-},
-    helloFromServer:()=>"hello from server aniket",
+    verifyGoogleToken: async (parent:any,{token}:{token:string})=>{
+        const verifyedToken = await UserServices.verifyUserGoogleToken(token)
+        return verifyedToken;
+    },
     getCurrentUser:async (parent:any,args:any,ctx:GraphqlContext)=>{
-        console.log("getcurrent user")
-        const id = ctx.user?.id
-        if(!id)return null;
-        const user = await prismaClient.user.findUnique({where:{id}})
-        return user;
+       const user = UserServices.getCurrentUser(ctx)
+       return user;
     },
     getUserFromId: async(parent:any,{id}:{id:string})=>{
-        return prismaClient.user.findUnique({where
-        :{id}})
+        return prismaClient.user.findUnique({where:{id}})
+    },
+    
+   
+}
+const mutations = {
+    unFollowUser:async(parent:any,{to}:{to:string},ctx:GraphqlContext)=>{
+        if(!ctx?.user?.id) throw new Error("unauthenticated")
+        await UserServices.unFollow(ctx.user.id,to)
+        return true;
+    },
+    followUser:async(parent:any,{to}:{to:string},ctx:GraphqlContext)=>{
+        if(!ctx?.user?.id) throw new Error("unauthenticated")
+        const reuslt=  await UserServices.followUser(ctx.user.id,to)
+        return true;
+    },
+    checkFollowStaus:async(parent:any,{to}:{to:string},ctx:GraphqlContext)=>{
+        if(!ctx?.user?.id) throw new Error("unauthenticated")
+        return await UserServices.checkFollow(ctx.user.id,to);
     }
 }
 const extraResolver = {
     User: {
-    tweets : (parent:User)=> prismaClient.tweet.findMany({where:{authorId:parent.id}})
+    tweets : (parent:User)=> prismaClient.tweet.findMany({where:{authorId:parent.id}}),
+    followers:async(parent:User)=> {
+        const result = await prismaClient.follows.findMany({where:{following:{id:parent.id}},include:{follower:true,following:true}})
+        return result.map((e)=>e.follower)
+    },
+    following:async(parent:User)=> {
+        const reuslt = await prismaClient.follows.findMany({where:{follower:{id:parent.id}},include:{follower:true,following:true}})
+        return reuslt.map((e)=>e.following)
+    },
+    recommendation:async(parent:any,{},ctx:GraphqlContext)=>{
+        if(!ctx.user) throw new Error("unauthenticate")
+        return await UserServices.recommendationUser(ctx);
+      }
     }
+
 }
-export const resolvers = {quries,extraResolver}
+export const resolvers = {quries,extraResolver,mutations}
 

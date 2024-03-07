@@ -9,7 +9,10 @@ exports.types = `#graphql
      lastName:String
      email:String!
      profileImageUrl:String
+     followers:[User]
+     following:[User]
      tweets: [Tweet]
+     recommendation:[User]
    }
 
 `;
