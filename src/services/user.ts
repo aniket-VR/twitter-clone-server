@@ -3,6 +3,7 @@ import { prismaClient } from "../clients/db";
 import JWTService from "./jwt";
 import { User } from "../app/user";
 import { GraphqlContext } from "../interfaces";
+import redisClient from "../clients/redis";
 
 interface GoogleTokenResult {
   iss?: string;
@@ -58,9 +59,12 @@ class UserServices {
     return userToken;
   }
   public static async getCurrentUser(ctx: GraphqlContext) {
-    const id = ctx.user?.id;
+    const id = ctx?.user?.id;
     if (!id) return null;
+    const currentUser = await redisClient.get(`CURRENT_USER:${ctx?.user?.id}`);
+    if (currentUser) return JSON.parse(currentUser);
     const user = await prismaClient.user.findUnique({ where: { id } });
+    await redisClient.set(`CURRENT_USER:${ctx.user?.id}`, JSON.stringify(user));
     return user;
   }
   public static async followUser(from: string, to: string) {
@@ -80,6 +84,11 @@ class UserServices {
   }
   public static async recommendationUser(ctx: GraphqlContext) {
     const user = [];
+    const result = await redisClient.get(
+      `USER_RECOMMENDATIONS:${ctx.user?.id}`
+    );
+    if (result) console.log("redis database");
+    if (result) return JSON.parse(result);
     const myFollwings = await prismaClient.follows.findMany({
       where: {
         follower: {
@@ -110,7 +119,13 @@ class UserServices {
           user.push(followingOfFollowedUser.following);
         }
       }
+      console.log();
     }
+    await redisClient.set(
+      `USER_RECOMMENDATIONS:${ctx.user?.id}`,
+      JSON.stringify(user)
+    );
+    if (user) console.log("calculated ");
     return user;
   }
   public static async unFollow(from: string, to: string) {

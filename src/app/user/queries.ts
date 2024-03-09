@@ -5,4 +5,3 @@ getCurrentUser:User
 getUserFromId(id:String!):User
 recommendation:[User]
 `;
-
