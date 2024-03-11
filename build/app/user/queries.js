@@ -7,4 +7,5 @@ helloFromServer:String
 getCurrentUser:User
 getUserFromId(id:String!):User
 recommendation:[User]
+getFollowing:[User]
 `;

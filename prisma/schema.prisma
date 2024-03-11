@@ -36,6 +36,22 @@ model Follows {
   @@id([followerId, followingId])
 }
 
+model MessageContainer {
+  sender         String
+  reciver        String
+  id             String    @id @default(cuid())
+  reciverMessage Message[] @relation("senderMessage")
+}
+
+model Message {
+  container   MessageContainer @relation("senderMessage", references: [id], fields: [containerId])
+  containerId String
+  senderID    String
+  reciverId   String
+  message     String
+  id          String           @id @default(cuid())
+}
+
 model Tweet {
   id       String  @id @default(cuid())
   content  String

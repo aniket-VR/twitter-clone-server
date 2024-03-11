@@ -1,8 +1,7 @@
 import axios from "axios";
 import { prismaClient } from "../clients/db";
 import JWTService from "./jwt";
-import { User } from "../app/user";
-import { GraphqlContext } from "../interfaces";
+import { GraphqlContext, User } from "../interfaces";
 import redisClient from "../clients/redis";
 
 interface GoogleTokenResult {
@@ -57,6 +56,34 @@ class UserServices {
     if (!userInDb) throw "user not found with this email";
     const userToken = await JWTService.generateTokenForUser(userInDb);
     return userToken;
+  }
+  public static async getCurrentUserFollowing(ctx: GraphqlContext) {
+    if (!ctx.user?.id) return null;
+    const resp = await redisClient.get(`CURRENT_USER_FOLLOWING:${ctx.user.id}`);
+    if (resp) return JSON.parse(resp);
+    const result = await prismaClient.follows.findMany({
+      where: { followerId: ctx.user.id },
+      include: {
+        following: true,
+      },
+    });
+    const finalOutput = [];
+    for (const user of result) {
+      const following = user;
+      const temp: User = {
+        firstName: following.following.firstName,
+        lastName: following.following.lastName,
+        email: following.following.email,
+        id: following.following.id,
+        profileImageUrl: following.following.profileImageUrl,
+      };
+      finalOutput.push(temp);
+    }
+    await redisClient.set(
+      `CURRENT_USER_FOLLOWING:${ctx.user.id}`,
+      JSON.stringify(finalOutput)
+    );
+    return finalOutput;
   }
   public static async getCurrentUser(ctx: GraphqlContext) {
     const id = ctx?.user?.id;

@@ -20,6 +20,9 @@ const quries = {
     await redisClient.set(`GETUSER_WITH_ID:${id}`, JSON.stringify(resp));
     return resp;
   },
+  getFollowing: async (parent: any, {}, ctx: GraphqlContext) => {
+    return await UserServices.getCurrentUserFollowing(ctx);
+  },
 };
 const mutations = {
   unFollowUser: async (
@@ -28,6 +31,7 @@ const mutations = {
     ctx: GraphqlContext
   ) => {
     if (!ctx?.user?.id) throw new Error("unauthenticated");
+    await redisClient.del(`CURRENT_USER_FOLLOWING:${ctx.user.id}`);
     await redisClient.del(`USER_RECOMMENDATIONS:${ctx?.user.id}`);
     await redisClient.del(`GETUSER_WITH_ID:${to}`);
     await redisClient.del(`CURRENT_USER:${ctx?.user?.id}`);
@@ -40,6 +44,7 @@ const mutations = {
     ctx: GraphqlContext
   ) => {
     if (!ctx?.user?.id) throw new Error("unauthenticated");
+    await redisClient.del(`CURRENT_USER_FOLLOWING:${ctx.user.id}`);
     await redisClient.del(`USER_RECOMMENDATIONS:${ctx?.user.id}`);
     await redisClient.del(`GETUSER_WITH_ID:${to}`);
     await redisClient.del(`CURRENT_USER:${ctx?.user?.id}`);

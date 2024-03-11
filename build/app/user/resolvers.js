@@ -33,12 +33,16 @@ const quries = {
         yield redis_1.default.set(`GETUSER_WITH_ID:${id}`, JSON.stringify(resp));
         return resp;
     }),
+    getFollowing: (parent, {}, ctx) => __awaiter(void 0, void 0, void 0, function* () {
+        return yield user_1.default.getCurrentUserFollowing(ctx);
+    }),
 };
 const mutations = {
     unFollowUser: (parent, { to }, ctx) => __awaiter(void 0, void 0, void 0, function* () {
         var _a, _b;
         if (!((_a = ctx === null || ctx === void 0 ? void 0 : ctx.user) === null || _a === void 0 ? void 0 : _a.id))
             throw new Error("unauthenticated");
+        yield redis_1.default.del(`CURRENT_USER_FOLLOWING:${ctx.user.id}`);
         yield redis_1.default.del(`USER_RECOMMENDATIONS:${ctx === null || ctx === void 0 ? void 0 : ctx.user.id}`);
         yield redis_1.default.del(`GETUSER_WITH_ID:${to}`);
         yield redis_1.default.del(`CURRENT_USER:${(_b = ctx === null || ctx === void 0 ? void 0 : ctx.user) === null || _b === void 0 ? void 0 : _b.id}`);
@@ -49,6 +53,7 @@ const mutations = {
         var _c, _d;
         if (!((_c = ctx === null || ctx === void 0 ? void 0 : ctx.user) === null || _c === void 0 ? void 0 : _c.id))
             throw new Error("unauthenticated");
+        yield redis_1.default.del(`CURRENT_USER_FOLLOWING:${ctx.user.id}`);
         yield redis_1.default.del(`USER_RECOMMENDATIONS:${ctx === null || ctx === void 0 ? void 0 : ctx.user.id}`);
         yield redis_1.default.del(`GETUSER_WITH_ID:${to}`);
         yield redis_1.default.del(`CURRENT_USER:${(_d = ctx === null || ctx === void 0 ? void 0 : ctx.user) === null || _d === void 0 ? void 0 : _d.id}`);
