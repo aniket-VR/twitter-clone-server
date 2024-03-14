@@ -98,9 +98,17 @@ function init() {
                         sender: temp.sender,
                     },
                 })
-                    .then(() => {
+                    .then((data) => __awaiter(this, void 0, void 0, function* () {
+                    yield db_1.prismaClient.message.create({
+                        data: {
+                            message: temp.message,
+                            reciverId: temp.reciver,
+                            senderID: temp.sender,
+                            containerId: data.id,
+                        },
+                    });
                     conSocket.broadcast.emit(`${temp.sender}-${temp.reciver}`, temp.message);
-                });
+                }));
             }));
         });
         server.listen(8000, () => console.log("server started at PORT:8000"));

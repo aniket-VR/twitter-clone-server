@@ -14,16 +14,26 @@ datasource db {
 }
 
 model User {
-  id              String    @id @default(cuid())
+  id              String     @id @default(cuid())
   firstName       String
   lastName        String?
-  email           String    @unique
+  email           String     @unique
   profileImageUrl String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  tweets          Tweet[]
-  followers       Follows[] @relation("follower")
-  following       Follows[] @relation("following")
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  tweets          Tweet[]    @relation("author")
+  like            Like[]     @relation("likeuser")
+  followers       Follows[]  @relation("follower")
+  following       Follows[]  @relation("following")
+  bookmark        Bookmark[] @relation("bookmark")
+}
+
+model Bookmark {
+  user    User   @relation("bookmark", references: [id], fields: [userId])
+  userId  String
+  tweet   Tweet  @relation("tweetBook", references: [id], fields: [tweetId])
+  tweetId String
+  id      String @id @default(cuid())
 }
 
 model Follows {
@@ -53,12 +63,21 @@ model Message {
 }
 
 model Tweet {
-  id       String  @id @default(cuid())
-  content  String
-  imageURL String?
-
-  author    User     @relation(fields: [authorId], references: [id])
+  id        String     @id @default(cuid())
+  content   String
+  imageURL  String?
+  bookMark  Bookmark[] @relation("tweetBook")
+  author    User       @relation("author", fields: [authorId], references: [id])
   authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  like      Like[]     @relation("tweet")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Like {
+  tweet   Tweet  @relation("tweet", references: [id], fields: [tweedId])
+  tweedId String
+  user    User   @relation("likeuser", references: [id], fields: [userId])
+  userId  String
+  id      String @id @default(cuid())
 }

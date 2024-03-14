@@ -1,8 +1,6 @@
 import { Tweet } from "@prisma/client";
 import { prismaClient } from "../../clients/db";
 import { GraphqlContext } from "../../interfaces";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import TweetServices from "../../services/tweet";
 import redisClient from "../../clients/redis";
 interface CreateTweetPayload {
@@ -45,6 +43,15 @@ export const queries = {
     console.log("delete twiiter");
     if (result) return true;
     return false;
+  },
+  likeTweet: async (
+    parent: any,
+    { tweetId }: { tweetId: String },
+    ctx: GraphqlContext
+  ) => {
+    console.log(tweetId);
+    const result = await TweetServices.likeTweet(ctx, tweetId);
+    return result;
   },
 };
 const extraResolver = {

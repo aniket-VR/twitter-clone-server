@@ -90,7 +90,16 @@ async function init() {
             sender: temp.sender,
           },
         })
-        .then(() => {
+        .then(async (data) => {
+          await prismaClient.message.create({
+            data: {
+              message: temp.message,
+              reciverId: temp.reciver,
+              senderID: temp.sender,
+              containerId: data.id,
+            },
+          });
+
           conSocket.broadcast.emit(
             `${temp.sender}-${temp.reciver}`,
             temp.message

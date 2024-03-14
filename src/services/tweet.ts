@@ -46,6 +46,47 @@ class TweetServices {
     console.log("database tweets");
     return tweets;
   }
+  public static async likeTweet(ctx: GraphqlContext, tweetId: String) {
+    console.log("tweetlike");
+    if (!ctx?.user?.id) throw new Error("unauthenitcated");
+    // const tweetStatus = await redisClient.get(
+    //   `LIKE_STATUS:${ctx.user.id}-${tweetId}`
+    // );
+    // console.log(tweetStatus);
+    // if (tweetStatus) {
+    //   return null;
+    // }
+    const result = await prismaClient.like.findFirst({
+      where: {
+        tweedId: tweetId as string,
+        userId: ctx.user?.id as string,
+      },
+    });
+    // await redisClient.setex(`LIKE_STATUS:${ctx.user.id}-${tweetId}`, 5, "10");
+    if (result) {
+      console.log("tweet delete");
+      return await prismaClient.like
+        .delete({
+          where: {
+            id: result.id,
+          },
+        })
+        .then(() => {
+          return false;
+        });
+    } else {
+      return await prismaClient.like
+        .create({
+          data: {
+            tweedId: tweetId as string,
+            userId: ctx.user?.id as string,
+          },
+        })
+        .then(() => {
+          return true;
+        });
+    }
+  }
   public static async createSignedUrl(imageType: string, ctx: GraphqlContext) {
     if (!ctx.user || !ctx.user.id) throw new Error("Unauthenticated");
     const allowedImageTypes = ["png", "jpg", "jpeg", "webp"];

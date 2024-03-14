@@ -1,4 +1,4 @@
-export const types =`#grapql
+export const types = `#grapql
 
    input CreateTweetData{
       content:String!
@@ -10,4 +10,11 @@ export const types =`#grapql
     imageURL:String
     author: User
    }
-`
+   type Like{
+      tweet :  Tweet 
+     tweedId :String
+    user  :  User   
+    userId : String
+     id   :   String 
+   }
+`;
