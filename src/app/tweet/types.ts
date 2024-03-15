@@ -17,4 +17,11 @@ export const types = `#grapql
     userId : String
      id   :   String 
    }
+   type Bookmark {
+      user   : User  , 
+      userId : String,
+      tweet :  Tweet ,
+      tweetId :String,
+      id :     String 
+    }
 `;

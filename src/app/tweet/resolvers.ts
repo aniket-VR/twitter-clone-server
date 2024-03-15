@@ -44,13 +44,38 @@ export const queries = {
     if (result) return true;
     return false;
   },
+  bookmarkTweet: async (
+    parent: any,
+    { tweetId, check }: { tweetId: String; check: Boolean },
+    ctx: GraphqlContext
+  ) => {
+    const result = await TweetServices.bookmarkTweet(ctx, { tweetId, check });
+    return result;
+  },
+  getBookMark: async (parent: any, {}, ctx: GraphqlContext) => {
+    if (!ctx?.user?.id) throw new Error("unauthenticated");
+    const result = await prismaClient.bookmark.findMany({
+      where: {
+        userId: ctx.user.id,
+      },
+      include: {
+        tweet: {
+          include: {
+            author: true,
+          },
+        },
+      },
+    });
+    console.log(result);
+    return result;
+  },
   likeTweet: async (
     parent: any,
-    { tweetId }: { tweetId: String },
+    { tweetId, check }: { tweetId: String; check: Boolean },
     ctx: GraphqlContext
   ) => {
     console.log(tweetId);
-    const result = await TweetServices.likeTweet(ctx, tweetId);
+    const result = await TweetServices.likeTweet(ctx, { tweetId, check });
     return result;
   },
 };

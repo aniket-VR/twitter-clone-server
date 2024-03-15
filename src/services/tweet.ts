@@ -34,6 +34,7 @@ class TweetServices {
     });
     return tweet;
   }
+
   public static async getAllTweets() {
     const result = await redisClient.get("ALL_TWEETS");
     if (result) {
@@ -46,22 +47,21 @@ class TweetServices {
     console.log("database tweets");
     return tweets;
   }
-  public static async likeTweet(ctx: GraphqlContext, tweetId: String) {
+  public static async likeTweet(
+    ctx: GraphqlContext,
+    { tweetId, check }: { tweetId: String; check: Boolean }
+  ) {
     console.log("tweetlike");
     if (!ctx?.user?.id) throw new Error("unauthenitcated");
-    // const tweetStatus = await redisClient.get(
-    //   `LIKE_STATUS:${ctx.user.id}-${tweetId}`
-    // );
-    // console.log(tweetStatus);
-    // if (tweetStatus) {
-    //   return null;
-    // }
     const result = await prismaClient.like.findFirst({
       where: {
         tweedId: tweetId as string,
         userId: ctx.user?.id as string,
       },
     });
+    if (check) {
+      return result ? true : false;
+    }
     // await redisClient.setex(`LIKE_STATUS:${ctx.user.id}-${tweetId}`, 5, "10");
     if (result) {
       console.log("tweet delete");
@@ -79,6 +79,46 @@ class TweetServices {
         .create({
           data: {
             tweedId: tweetId as string,
+            userId: ctx.user?.id as string,
+          },
+        })
+        .then(() => {
+          return true;
+        });
+    }
+  }
+  public static async bookmarkTweet(
+    ctx: GraphqlContext,
+    { tweetId, check }: { tweetId: String; check: Boolean }
+  ) {
+    console.log("tweetlike");
+    if (!ctx?.user?.id) throw new Error("unauthenitcated");
+    const result = await prismaClient.bookmark.findFirst({
+      where: {
+        tweetId: tweetId as string,
+        userId: ctx.user?.id as string,
+      },
+    });
+    if (check) {
+      return result ? true : false;
+    }
+    // await redisClient.setex(`LIKE_STATUS:${ctx.user.id}-${tweetId}`, 5, "10");
+    if (result) {
+      console.log("tweet delete");
+      return await prismaClient.bookmark
+        .delete({
+          where: {
+            id: result.id,
+          },
+        })
+        .then(() => {
+          return false;
+        });
+    } else {
+      return await prismaClient.bookmark
+        .create({
+          data: {
+            tweetId: tweetId as string,
             userId: ctx.user?.id as string,
           },
         })
