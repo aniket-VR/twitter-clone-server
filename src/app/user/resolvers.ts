@@ -11,11 +11,14 @@ const quries = {
   },
   getCurrentUser: async (parent: any, args: any, ctx: GraphqlContext) => {
     const user = UserServices.getCurrentUser(ctx);
+    console.log("current user");
     return user;
   },
   getUserFromId: async (parent: any, { id }: { id: string }) => {
     const result = await redisClient.get(`GETUSER_WITH_ID:${id}`);
+    console.log(result);
     if (result) return JSON.parse(result);
+
     const resp = await prismaClient.user.findUnique({ where: { id } });
     await redisClient.set(`GETUSER_WITH_ID:${id}`, JSON.stringify(resp));
     return resp;
@@ -31,6 +34,7 @@ const mutations = {
     ctx: GraphqlContext
   ) => {
     if (!ctx?.user?.id) throw new Error("unauthenticated");
+
     await redisClient.del(`CURRENT_USER_FOLLOWING:${ctx.user.id}`);
     await redisClient.del(`USER_RECOMMENDATIONS:${ctx?.user.id}`);
     await redisClient.del(`GETUSER_WITH_ID:${to}`);

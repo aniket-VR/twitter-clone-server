@@ -49,8 +49,6 @@ export async function initServer() {
     expressMiddleware(graphqlServer, {
       context: async ({ req, res }) => {
         const token = req.headers.authorization;
-        console.log(token + "serve r");
-
         // console.log(JWTService.decodeToken(token))
         return {
           user:

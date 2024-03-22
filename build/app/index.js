@@ -49,7 +49,6 @@ function initServer() {
         app.use("/graphql", (0, express4_1.expressMiddleware)(graphqlServer, {
             context: ({ req, res }) => __awaiter(this, void 0, void 0, function* () {
                 const token = req.headers.authorization;
-                console.log(token + "serve r");
                 // console.log(JWTService.decodeToken(token))
                 return {
                     user: token == "" || token == "undefined" || token == undefined

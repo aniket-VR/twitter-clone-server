@@ -107,6 +107,8 @@ async function init() {
         });
     });
   });
-  server.listen(8000, () => console.log("server started at PORT:8000"));
+  server.listen(process.env.PORT, () =>
+    console.log("server started at PORT:8000")
+  );
 }
 init();

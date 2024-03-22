@@ -23,10 +23,12 @@ const quries = {
     }),
     getCurrentUser: (parent, args, ctx) => __awaiter(void 0, void 0, void 0, function* () {
         const user = user_1.default.getCurrentUser(ctx);
+        console.log("current user");
         return user;
     }),
     getUserFromId: (parent, { id }) => __awaiter(void 0, void 0, void 0, function* () {
         const result = yield redis_1.default.get(`GETUSER_WITH_ID:${id}`);
+        console.log(result);
         if (result)
             return JSON.parse(result);
         const resp = yield db_1.prismaClient.user.findUnique({ where: { id } });
