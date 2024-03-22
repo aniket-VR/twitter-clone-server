@@ -9,7 +9,7 @@ async function init() {
   const server = http.createServer(app);
   const socket = new Server(server, {
     cors: {
-      origin: "*",
+      origin: "*:*",
       methods: ["GET", "POST"],
     },
   });
