@@ -24,7 +24,7 @@ function init() {
         const server = http_1.default.createServer(app);
         const socket = new socket_io_1.Server(server, {
             cors: {
-                origin: "*",
+                origin: "*:*",
                 methods: ["GET", "POST"],
             },
         });
