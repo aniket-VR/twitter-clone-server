@@ -40,10 +40,7 @@ export const queries = {
     await redisClient.del("ALL_TWEETS");
     await redisClient.del(`GETUSER_WITH_ID:${ctx?.user.id}`);
     await redisClient.del(`CURRENT_USER:${ctx?.user?.id}`);
-    const like = await prismaClient.like.deleteMany({ where: { tweedId: id } });
-    const bookmark = await prismaClient.bookmark.deleteMany({
-      where: { tweetId: id },
-    });
+
     const result = await prismaClient.tweet.delete({ where: { id: id } });
     console.log("delete twiiter");
     if (result) return true;

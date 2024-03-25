@@ -31,7 +31,7 @@ model User {
 model Bookmark {
   user    User   @relation("bookmark", references: [id], fields: [userId])
   userId  String
-  tweet   Tweet  @relation("tweetBook", references: [id], fields: [tweetId])
+  tweet   Tweet  @relation("tweetBook", references: [id], fields: [tweetId], onDelete: Cascade)
   tweetId String
   id      String @id @default(cuid())
 }
@@ -75,9 +75,9 @@ model Tweet {
 }
 
 model Like {
-  tweet   Tweet  @relation("tweet", references: [id], fields: [tweedId])
+  tweet   Tweet  @relation("tweet", references: [id], fields: [tweedId], onDelete: Cascade)
   tweedId String
-  user    User   @relation("likeuser", references: [id], fields: [userId])
+  user    User   @relation("likeuser", references: [id], fields: [userId], onDelete: Cascade)
   userId  String
   id      String @id @default(cuid())
 }
